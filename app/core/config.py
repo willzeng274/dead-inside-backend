@@ -33,7 +33,6 @@ class Settings(BaseSettings):
             self.FRONTEND_HOST.rstrip("/")
         ]
 
-    SPEECH_TO_TEXT_MODEL: str = "gpt-4o-transcribe"
     # SPEECH_TO_TEXT_MODEL: str = "whisper-1"
     # SPEECH_TO_TEXT_MODEL: str = "gpt-4o-mini-transcribe"
 

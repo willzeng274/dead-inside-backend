@@ -13,8 +13,6 @@ def get_device():
         import torch
         if torch.cuda.is_available():
             return "cuda"
-        # Note: faster-whisper doesn't support MPS (Apple Silicon GPU)
-        # It only supports CUDA and CPU
         else:
             return "cpu"
     except ImportError:

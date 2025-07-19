@@ -2,71 +2,148 @@ import json
 import time
 from typing import List, Optional
 from enum import Enum
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from app.core.config import llm_client
 
 
-class Outfit(str, Enum):
-    CASUAL = "casual"
-    FORMAL = "formal"
-    SPORTY = "sporty"
-    GOTH = "goth"
-    BOHEMIAN = "bohemian"
-    VINTAGE = "vintage"
-    STREETWEAR = "streetwear"
-    BUSINESS = "business"
-
-
-class LifeProblem(str, Enum):
-    RELATIONSHIP_ISSUES = "relationship issues"
-    CAREER_STAGNATION = "career stagnation"
-    FINANCIAL_STRESS = "financial stress"
-    IDENTITY_CRISIS = "identity crisis"
-    FAMILY_CONFLICT = "family conflict"
-    HEALTH_CONCERNS = "health concerns"
-    SOCIAL_ISOLATION = "social isolation"
-    ADDICTION = "addiction struggles"
-
-
 class MentalState(str, Enum):
-    ANXIOUS = "anxious"
-    DEPRESSED = "depressed"
-    ANGRY = "angry"
-    CONFUSED = "confused"
-    HOPEFUL = "hopeful"
-    EXHAUSTED = "exhausted"
-    NUMB = "numb"
-    OVERWHELMED = "overwhelmed"
+    """Character's current emotional and psychological state"""
+    ANXIOUS = "anxious"  # Feeling worried, nervous, or uneasy
+    DEPRESSED = "depressed"  # Feeling sad, hopeless, or lacking energy
+    ANGRY = "angry"  # Feeling frustrated, irritated, or hostile
+    CONFUSED = "confused"  # Feeling uncertain, disoriented, or unclear
+    HOPEFUL = "hopeful"  # Feeling optimistic about the future
+    EXHAUSTED = "exhausted"  # Feeling extremely tired, drained, or worn out
+    NUMB = "numb"  # Feeling emotionally detached or indifferent
+    OVERWHELMED = "overwhelmed"  # Feeling unable to cope with current situation
+    CONTENT = "content"  # Feeling satisfied and at peace
+    EXCITED = "excited"  # Feeling enthusiastic, eager, or thrilled
+    LONELY = "lonely"  # Feeling isolated or lacking social connection
+    STRESSED = "stressed"  # Feeling under pressure or tension
+    PEACEFUL = "peaceful"  # Feeling calm, serene, or tranquil
+    FRUSTRATED = "frustrated"  # Feeling blocked or unable to achieve goals
+    INSPIRED = "inspired"  # Feeling motivated or creatively energized
 
 
-class CharacterAccessories(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class BodyType(str, Enum):
+    """Character's physical body type and build"""
+    SLIM = "slim"  # Thin, lean build
+    ATHLETIC = "athletic"  # Fit, toned, sports-oriented build
+    AVERAGE = "average"  # Medium, typical build
+    CURVY = "curvy"  # Full-figured with defined curves
+    PLUS_SIZE = "plus_size"  # Larger, fuller build
+    MUSCULAR = "muscular"  # Strong, well-built with visible muscle
+    PETITE = "petite"  # Small, delicate build
+    TALL = "tall"  # Above average height
+    SHORT = "short"  # Below average height
 
-    hat: Optional[str]
-    glasses: Optional[str]
-    jewelry: Optional[str]
-    bag: Optional[str]
-    other: Optional[str]
+
+class ShirtStyle(str, Enum):
+    T_SHIRT = "t_shirt"
+    BUTTON_DOWN = "button_down"
+    HOODIE = "hoodie"
+    SWEATER = "sweater"
+    TANK_TOP = "tank_top"
+    POLO = "polo"
+    BLOUSE = "blouse"
+    DRESS_SHIRT = "dress_shirt"
+    CARDIGAN = "cardigan"
+    FLANNEL = "flannel"
+    TURTLENECK = "turtleneck"
+    CROP_TOP = "crop_top"
+    TUNIC = "tunic"
+    HENLEY = "henley"
+    VEST = "vest"
+
+
+class PantsStyle(str, Enum):
+    JEANS = "jeans"
+    CHINOS = "chinos"
+    SLACKS = "slacks"
+    SHORTS = "shorts"
+    LEGGINGS = "leggings"
+    SKIRT = "skirt"
+    CARGO_PANTS = "cargo_pants"
+    SWEATPANTS = "sweatpants"
+    DRESS_PANTS = "dress_pants"
+    JOGGERS = "joggers"
+    PALAZZO_PANTS = "palazzo_pants"
+    CULOTTES = "culottes"
+    OVERALLS = "overalls"
+    CAPRIS = "capris"
+    WIDE_LEG = "wide_leg"
+
+
+class OutfitStyle(str, Enum):
+    """Overall aesthetic and style category for character's fashion sense"""
+    CASUAL = "casual"  # Relaxed, everyday wear
+    BUSINESS = "business"  # Professional, office-appropriate attire
+    STREETWEAR = "streetwear"  # Urban, trendy, street fashion
+    VINTAGE = "vintage"  # Retro, classic, old-fashioned style
+    BOHEMIAN = "bohemian"  # Artistic, free-spirited, eclectic
+    GOTHIC = "gothic"  # Dark, dramatic, alternative style
+    PREPPY = "preppy"  # Clean, classic, traditional style
+    ATHLETIC = "athletic"  # Sporty, active, fitness-oriented
+    FORMAL = "formal"  # Elegant, sophisticated, dressy
+    HIPSTER = "hipster"  # Alternative, indie, counter-culture
+    MINIMALIST = "minimalist"  # Simple, clean, understated
+    ECLECTIC = "eclectic"  # Mixed, diverse, varied styles
+    PUNK = "punk"  # Edgy, rebellious, rock-inspired
+    ELEGANT = "elegant"  # Refined, sophisticated, tasteful
+    RUSTIC = "rustic"  # Natural, outdoorsy, country-style
+
+
+class AccessoryType(str, Enum):
+    """Types of accessories and items characters can wear or carry"""
+    # Headwear
+    HAT = "hat"  # Generic hat or head covering
+    CAP = "cap"  # Baseball cap or similar casual hat
+    BEANIE = "beanie"  # Winter hat, often knitted
+    
+    # Eyewear
+    GLASSES = "glasses"  # Prescription or reading glasses
+    SUNGLASSES = "sunglasses"  # Sunglasses for sun protection
+    
+    # Jewelry
+    NECKLACE = "necklace"  # Neck jewelry or chain
+    EARRINGS = "earrings"  # Ear jewelry
+    BRACELET = "bracelet"  # Wrist jewelry
+    RING = "ring"  # Finger jewelry
+    WATCH = "watch"  # Timepiece or wristwatch
+    
+    # Bags
+    BAG = "bag"  # Generic bag or container
+    BACKPACK = "backpack"  # Backpack for carrying items
+    PURSE = "purse"  # Handbag or wallet
+    
+    # Other accessories
+    SCARF = "scarf"  # Neck scarf for warmth or style
+    BELT = "belt"  # Waist belt for holding pants
+    GLOVES = "gloves"  # Hand coverings
+    TIE = "tie"  # Neck tie for formal wear
+    BANDANA = "bandana"  # Head or neck bandana
 
 
 class Character(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    name: str
-    background: str
-    outfit: Outfit
-    shirt: str
-    accessories: CharacterAccessories
-    problems: List[LifeProblem]
-    mental_state: MentalState
-    interaction_warning: str
+    name: str = Field(..., description="Character's full name (first and last name)")
+    background: str = Field(..., description="Detailed life history and background story explaining the character's past, current situation, and what led them to their present circumstances (3-5 sentences)")
+    outfit_style: OutfitStyle = Field(...)
+    shirt: ShirtStyle = Field(...)
+    pants: PantsStyle = Field(...)
+    body_type: BodyType = Field(...)
+    accessories: List[AccessoryType] = Field(..., description="List of accessories and items the character wears or carries (0-5 items)")
+    problems: str = Field(..., description="Detailed description of the character's current life challenges, struggles, and difficulties they are facing (2-4 sentences)")
+    mental_state: MentalState = Field(...)
+    interaction_warning: str = Field(..., description="Specific warning about topics, triggers, or subjects that should be avoided when interacting with this character")
 
 
 class CharacterGenerationResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    theme: str
-    characters: List[Character]
+    theme: str = Field(..., description="The main theme or setting that was used to generate the characters")
+    characters: List[Character] = Field(..., description="List of generated characters with complete details including appearance, background, and personality traits", min_length=3, max_length=5)
 
 
 async def generate_characters_from_theme(theme: str) -> CharacterGenerationResponse:
@@ -80,57 +157,95 @@ async def generate_characters_from_theme(theme: str) -> CharacterGenerationRespo
         CharacterGenerationResponse: Generated characters with all attributes
     """
 
-    # Example JSON schema for the response:
-    # {
-    #     "theme": "urban dystopia",
-    #     "characters": [
-    #         {
-    #             "name": "Marcus Chen",
-    #             "background": "Former tech executive who lost everything in the market crash...",
-    #             "outfit": "streetwear",
-    #             "shirt": "Faded black hoodie with torn sleeves",
-    #             "accessories": {
-    #                 "hat": "Worn baseball cap",
-    #                 "glasses": null,
-    #                 "jewelry": "Simple silver chain",
-    #                 "bag": "Messenger bag with patches",
-    #                 "other": null
-    #             },
-    #             "problems": ["financial stress", "identity crisis"],
-    #             "mental_state": "numb",
-    #             "interaction_warning": "Avoid discussing money or past success."
-    #         }
-    #     ]
-    # }
-
     response_schema = CharacterGenerationResponse.model_json_schema(mode="validation")
 
-    system_prompt = """You are a creative character designer. Generate diverse, complex characters based on the given theme.
-    
-    IMPORTANT: You MUST use ONLY the exact values provided in the lists for outfits, problems, and mental states.
-    Do NOT create new categories or variations. Characters should feel real but must fit within these constraints.
-    
-    For each character, provide:
-    - A unique name
-    - A detailed background story
-    - Their outfit style (MUST be one of the provided options)
-    - A specific shirt description
-    - Accessories (can be null or descriptive strings)
-    - Life problems (MUST be from the provided list only)
-    - Current mental state (MUST be one of the provided options)
-    - A warning about interaction triggers
-    
-    Return valid JSON that can be parsed by Python's json.loads()."""
+    system_prompt = """You are an expert character designer and creative writer specializing in creating deeply nuanced, emotionally complex characters for interactive storytelling and game development. Your task is to generate diverse, compelling characters that feel authentic and relatable while fitting within specific thematic and mechanical constraints.
 
-    user_prompt = f"""Generate 3-5 characters for the theme: "{theme}"
+CHARACTER CREATION GUIDELINES:
 
-    Ensure characters use ONLY these options:
-    - Outfits: {', '.join([outfit.value for outfit in Outfit])}
-    - Problems: {', '.join([problem.value for problem in LifeProblem])}
-    - Mental states: {', '.join([state.value for state in MentalState])}
+1. DIVERSITY & REPRESENTATION:
+   - Create characters from various ethnicities, ages, genders, and backgrounds
+   - Ensure representation across different body types, styles, and personalities
+   - Avoid stereotypes and create authentic, three-dimensional individuals
+   - Include characters with different abilities, neurodivergence, and life experiences
 
-    The response must follow this exact JSON schema:
-    {json.dumps(response_schema, indent=2)}"""
+2. CLOTHING & STYLE SYSTEM:
+   - Outfit Style: Choose from the provided aesthetic categories (casual, business, streetwear, etc.)
+   - Shirt: Select specific shirt type that matches the outfit style
+   - Pants: Choose appropriate bottom wear that complements the overall look
+   - Body Type: Assign realistic body type that influences clothing choices
+   - Accessories: Select 0-5 accessory types from the provided list that reflect personality and lifestyle
+
+3. EMOTIONAL & PSYCHOLOGICAL DEPTH:
+   - Mental State: Current emotional condition (must be from provided list)
+   - Problems: Detailed description of life challenges and struggles (10+ sentences)
+   - Background: Rich life history that explains current situation
+   - Interaction Warnings: Sensitive topics to avoid during interactions
+
+4. CHARACTER DEVELOPMENT PRINCIPLES:
+   - Each character should have a unique voice and perspective
+   - Problems should be detailed, realistic, and relatable (10+ sentences)
+   - Mental states should influence behavior and dialogue
+   - Background stories should provide context for current circumstances
+   - Clothing choices should reflect personality, lifestyle, and current situation
+
+5. THEMATIC INTEGRATION:
+   - All characters must fit within the given theme
+   - Theme should influence clothing, problems, and mental states
+   - Maintain consistency while ensuring variety
+   - Create characters that could realistically exist in the same world
+
+6. TECHNICAL REQUIREMENTS:
+   - Use ONLY the exact enum values provided
+   - Do not create new categories or variations
+   - Ensure all required fields are populated
+   - Maintain JSON schema compliance
+   - Generate 3-5 characters per request
+
+7. INTERACTION DESIGN:
+   - Characters should be designed for meaningful player interaction
+   - Each character should have clear conversation boundaries
+   - Warnings should help guide appropriate dialogue choices
+   - Problems should create opportunities for empathy and connection
+
+8. AUTHENTICITY CHECKLIST:
+   - Are the problems detailed, realistic, and relatable?
+   - Does the mental state match the background story?
+   - Do clothing choices reflect the character's lifestyle?
+   - Are the selected accessories appropriate for the character's style and situation?
+   - Does the interaction warning make sense given the character's issues?
+   - Is the background story detailed enough to understand the character?
+
+Remember: These characters are designed for meaningful player interaction. Each should feel like a real person with genuine struggles, hopes, and personality. The goal is to create characters that players can empathize with and want to help, while respecting their boundaries and triggers."""
+
+    user_prompt = f"""Generate 3-5 compelling characters for the theme: "{theme}"
+
+AVAILABLE OPTIONS (USE ONLY THESE EXACT VALUES):
+
+Body Types: {', '.join([body.value for body in BodyType])}
+Shirt Styles: {', '.join([shirt.value for shirt in ShirtStyle])}
+Pants Styles: {', '.join([pants.value for pants in PantsStyle])}
+Outfit Styles: {', '.join([outfit.value for outfit in OutfitStyle])}
+Accessories: {', '.join([accessory.value for accessory in AccessoryType])}
+Mental States: {', '.join([state.value for state in MentalState])}
+
+CHARACTER REQUIREMENTS:
+- Each character must have a unique name, background, and personality
+- Problems should be detailed descriptions of life challenges (10+ sentences)
+- Mental states should reflect current emotional condition
+- Clothing should match the character's lifestyle and personality
+- Accessories should be a list of 0-5 relevant accessory types from the provided options
+- Interaction warnings should be specific and helpful
+- Background stories should be detailed (3-5 sentences)
+
+THEME INTEGRATION:
+Ensure all characters feel connected to the theme "{theme}" while maintaining individual uniqueness. The theme should influence clothing choices, problems, and overall character design.
+
+RESPONSE FORMAT:
+Return valid JSON that strictly follows this schema:
+{json.dumps(response_schema, indent=2)}
+
+IMPORTANT: Use ONLY the exact enum values provided above. Do not create variations or new categories."""
 
     start_time = time.time()
 

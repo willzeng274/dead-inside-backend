@@ -4,13 +4,17 @@ import pytest
 from app.core.llm import (
     generate_characters_from_theme,
     CharacterGenerationResponse,
-    Outfit,
-    LifeProblem,
+    OutfitStyle,
     MentalState,
+    ShirtStyle,
+    PantsStyle,
+    BodyType,
+    AccessoryType,
 )
 
 
 @pytest.mark.asyncio
+@pytest.mark.integration
 async def test_character_generation():
     """Test the character generation function with different themes."""
 
@@ -48,47 +52,43 @@ async def test_character_generation():
 
                 assert character.name, "Character must have a name"
                 assert character.background, "Character must have a background"
-                assert character.shirt, "Character must have a shirt description"
+                assert character.outfit_style, "Character must have an outfit style"
+                assert character.shirt, "Character must have a shirt"
+                assert character.pants, "Character must have pants"
+                assert character.body_type, "Character must have a body type"
+                assert character.mental_state, "Character must have a mental state"
                 assert (
                     character.interaction_warning
                 ), "Character must have an interaction warning"
 
-                assert character.outfit in Outfit, f"Invalid outfit: {character.outfit}"
+                # Enum validation
+                assert character.outfit_style in OutfitStyle, f"Invalid outfit style: {character.outfit_style}"
+                assert character.shirt in ShirtStyle, f"Invalid shirt: {character.shirt}"
+                assert character.pants in PantsStyle, f"Invalid pants: {character.pants}"
+                assert character.body_type in BodyType, f"Invalid body type: {character.body_type}"
                 assert (
                     character.mental_state in MentalState
                 ), f"Invalid mental state: {character.mental_state}"
 
-                assert (
-                    len(character.problems) > 0
-                ), "Character must have at least one problem"
-                for problem in character.problems:
-                    assert problem in LifeProblem, f"Invalid problem: {problem}"
+                # Problems validation
+                assert character.problems, "Character must have problems description"
+                assert len(character.problems) >= 10, "Problems description should be detailed (at least 10 characters)"
 
-                print(f"  Outfit: {character.outfit.value}")
-                print(f"  Shirt: {character.shirt}")
+                assert isinstance(character.accessories, list), "Accessories must be a list"
+                for accessory in character.accessories:
+                    assert accessory in AccessoryType, f"Invalid accessory: {accessory}"
+
+                print(f"  Outfit Style: {character.outfit_style.value}")
+                print(f"  Shirt: {character.shirt.value}")
+                print(f"  Pants: {character.pants.value}")
+                print(f"  Body Type: {character.body_type.value}")
                 print(f"  Mental State: {character.mental_state.value}")
-                print(f"  Problems: {', '.join([p.value for p in character.problems])}")
+                print(f"  Problems: {character.problems}")
 
-                if any(
-                    [
-                        character.accessories.hat,
-                        character.accessories.glasses,
-                        character.accessories.jewelry,
-                        character.accessories.bag,
-                        character.accessories.other,
-                    ]
-                ):
-                    print("  Accessories:")
-                    if character.accessories.hat:
-                        print(f"    - Hat: {character.accessories.hat}")
-                    if character.accessories.glasses:
-                        print(f"    - Glasses: {character.accessories.glasses}")
-                    if character.accessories.jewelry:
-                        print(f"    - Jewelry: {character.accessories.jewelry}")
-                    if character.accessories.bag:
-                        print(f"    - Bag: {character.accessories.bag}")
-                    if character.accessories.other:
-                        print(f"    - Other: {character.accessories.other}")
+                if character.accessories:
+                    print(f"  Accessories: {', '.join([a.value for a in character.accessories])}")
+                else:
+                    print("  Accessories: None")
 
                 print(f"  Warning: {character.interaction_warning}")
 
@@ -126,7 +126,84 @@ async def test_json_schema_format():
     assert "theme" in schema["properties"], "Schema must have theme property"
     assert "characters" in schema["properties"], "Schema must have characters property"
 
+    character_schema = schema["properties"]["characters"]["items"]
+    required_fields = ["name", "background", "outfit_style", "shirt", "pants", "body_type", "accessories", "problems", "mental_state", "interaction_warning"]
+    
+    if "properties" in character_schema:
+        for field in required_fields:
+            assert field in character_schema["properties"], f"Character schema must have {field} property"
+    else:
+        assert "$ref" in character_schema, "Character schema must have properties or $ref"
+
     print("\n✅ JSON schema validation passed")
+
+
+@pytest.mark.asyncio
+async def test_enum_values():
+    """Test that all enum values are properly defined."""
+
+    print("\n" + "=" * 60)
+    print("Testing Enum Values")
+    print("=" * 60)
+
+    # Test enum counts
+    print(f"OutfitStyle options: {len(OutfitStyle)}")
+    print(f"ShirtStyle options: {len(ShirtStyle)}")
+    print(f"PantsStyle options: {len(PantsStyle)}")
+    print(f"BodyType options: {len(BodyType)}")
+    print(f"AccessoryType options: {len(AccessoryType)}")
+
+    print(f"MentalState options: {len(MentalState)}")
+
+    # Verify minimum counts
+    assert len(OutfitStyle) >= 10, "Should have at least 10 outfit styles"
+    assert len(ShirtStyle) >= 10, "Should have at least 10 shirt styles"
+    assert len(PantsStyle) >= 10, "Should have at least 10 pants styles"
+    assert len(BodyType) >= 5, "Should have at least 5 body types"
+    assert len(AccessoryType) >= 10, "Should have at least 10 accessory types"
+
+    assert len(MentalState) >= 10, "Should have at least 10 mental states"
+
+    print("\n✅ Enum validation passed")
+
+
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_character_validation():
+    """Test character validation with edge cases."""
+
+    print("\n" + "=" * 60)
+    print("Testing Character Validation")
+    print("=" * 60)
+
+    # Test a simple theme to ensure validation works
+    try:
+        response = await generate_characters_from_theme("test theme")
+        
+        for character in response.characters:
+            # Test that problems description is detailed
+            assert len(character.problems) >= 10, f"Problems description too short: {len(character.problems)} characters"
+            
+            # Test that accessories is a list
+            assert isinstance(character.accessories, list), "Accessories should be a list"
+            
+            # Test that all enum values are valid
+            assert character.outfit_style in OutfitStyle
+            assert character.shirt in ShirtStyle
+            assert character.pants in PantsStyle
+            assert character.body_type in BodyType
+            assert character.mental_state in MentalState
+            
+
+                
+            for accessory in character.accessories:
+                assert accessory in AccessoryType
+
+        print("✅ Character validation passed")
+        
+    except Exception as e:
+        print(f"❌ Character validation failed: {str(e)}")
+        raise
 
 
 async def main():
@@ -135,7 +212,8 @@ async def main():
     print("🧪 Starting Character Generation Tests\n")
 
     await test_json_schema_format()
-
+    await test_enum_values()
+    await test_character_validation()
     await test_character_generation()
 
     print("\n\n✅ All tests completed successfully!")
