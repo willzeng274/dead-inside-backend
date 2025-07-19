@@ -1,32 +1,14 @@
 import json
 import time
-from typing import List, Optional
+from typing import List
 from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field
 from app.core.config import llm_client
 
 
-class MentalState(str, Enum):
-    """Character's current emotional and psychological state"""
-    ANXIOUS = "anxious"  # Feeling worried, nervous, or uneasy
-    DEPRESSED = "depressed"  # Feeling sad, hopeless, or lacking energy
-    ANGRY = "angry"  # Feeling frustrated, irritated, or hostile
-    CONFUSED = "confused"  # Feeling uncertain, disoriented, or unclear
-    HOPEFUL = "hopeful"  # Feeling optimistic about the future
-    EXHAUSTED = "exhausted"  # Feeling extremely tired, drained, or worn out
-    NUMB = "numb"  # Feeling emotionally detached or indifferent
-    OVERWHELMED = "overwhelmed"  # Feeling unable to cope with current situation
-    CONTENT = "content"  # Feeling satisfied and at peace
-    EXCITED = "excited"  # Feeling enthusiastic, eager, or thrilled
-    LONELY = "lonely"  # Feeling isolated or lacking social connection
-    STRESSED = "stressed"  # Feeling under pressure or tension
-    PEACEFUL = "peaceful"  # Feeling calm, serene, or tranquil
-    FRUSTRATED = "frustrated"  # Feeling blocked or unable to achieve goals
-    INSPIRED = "inspired"  # Feeling motivated or creatively energized
-
-
 class BodyType(str, Enum):
     """Character's physical body type and build"""
+
     SLIM = "slim"  # Thin, lean build
     ATHLETIC = "athletic"  # Fit, toned, sports-oriented build
     AVERAGE = "average"  # Medium, typical build
@@ -74,48 +56,30 @@ class PantsStyle(str, Enum):
     WIDE_LEG = "wide_leg"
 
 
-class OutfitStyle(str, Enum):
-    """Overall aesthetic and style category for character's fashion sense"""
-    CASUAL = "casual"  # Relaxed, everyday wear
-    BUSINESS = "business"  # Professional, office-appropriate attire
-    STREETWEAR = "streetwear"  # Urban, trendy, street fashion
-    VINTAGE = "vintage"  # Retro, classic, old-fashioned style
-    BOHEMIAN = "bohemian"  # Artistic, free-spirited, eclectic
-    GOTHIC = "gothic"  # Dark, dramatic, alternative style
-    PREPPY = "preppy"  # Clean, classic, traditional style
-    ATHLETIC = "athletic"  # Sporty, active, fitness-oriented
-    FORMAL = "formal"  # Elegant, sophisticated, dressy
-    HIPSTER = "hipster"  # Alternative, indie, counter-culture
-    MINIMALIST = "minimalist"  # Simple, clean, understated
-    ECLECTIC = "eclectic"  # Mixed, diverse, varied styles
-    PUNK = "punk"  # Edgy, rebellious, rock-inspired
-    ELEGANT = "elegant"  # Refined, sophisticated, tasteful
-    RUSTIC = "rustic"  # Natural, outdoorsy, country-style
-
-
 class AccessoryType(str, Enum):
     """Types of accessories and items characters can wear or carry"""
+
     # Headwear
     HAT = "hat"  # Generic hat or head covering
     CAP = "cap"  # Baseball cap or similar casual hat
     BEANIE = "beanie"  # Winter hat, often knitted
-    
+
     # Eyewear
     GLASSES = "glasses"  # Prescription or reading glasses
     SUNGLASSES = "sunglasses"  # Sunglasses for sun protection
-    
+
     # Jewelry
     NECKLACE = "necklace"  # Neck jewelry or chain
     EARRINGS = "earrings"  # Ear jewelry
     BRACELET = "bracelet"  # Wrist jewelry
     RING = "ring"  # Finger jewelry
     WATCH = "watch"  # Timepiece or wristwatch
-    
+
     # Bags
     BAG = "bag"  # Generic bag or container
     BACKPACK = "backpack"  # Backpack for carrying items
     PURSE = "purse"  # Handbag or wallet
-    
+
     # Other accessories
     SCARF = "scarf"  # Neck scarf for warmth or style
     BELT = "belt"  # Waist belt for holding pants
@@ -128,22 +92,45 @@ class Character(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     name: str = Field(..., description="Character's full name (first and last name)")
-    background: str = Field(..., description="Detailed life history and background story explaining the character's past, current situation, and what led them to their present circumstances (3-5 sentences)")
-    outfit_style: OutfitStyle = Field(...)
+    background: str = Field(
+        ...,
+        description="Detailed life history and background story explaining the character's past, current situation, and what led them to their present circumstances (3-5 sentences)",
+    )
+    # outfit_style: OutfitStyle = Field(...)
     shirt: ShirtStyle = Field(...)
     pants: PantsStyle = Field(...)
     body_type: BodyType = Field(...)
-    accessories: List[AccessoryType] = Field(..., description="List of accessories and items the character wears or carries (0-5 items)")
-    problems: str = Field(..., description="Detailed description of the character's current life challenges, struggles, and difficulties they are facing (2-4 sentences)")
-    mental_state: MentalState = Field(...)
-    interaction_warning: str = Field(..., description="Specific warning about topics, triggers, or subjects that should be avoided when interacting with this character")
+    accessories: List[AccessoryType] = Field(
+        ...,
+        description="List of accessories and items the character wears or carries (0-5 items)",
+    )
+    problems: str = Field(
+        ...,
+        description="Detailed description of the character's current life challenges, struggles, and difficulties they are facing (2-4 sentences)",
+    )
+    mental_state: str = Field(
+        ...,
+        description="Character's current emotional and psychological state described in a sentence or phrase (e.g., 'feeling anxious about the future', 'deeply depressed and hopeless', 'angry and frustrated with life')",
+    )
+    interaction_warning: str = Field(
+        ...,
+        description="Specific warning about topics, triggers, or subjects that should be avoided when interacting with this character",
+    )
 
 
 class CharacterGenerationResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    theme: str = Field(..., description="The main theme or setting that was used to generate the characters")
-    characters: List[Character] = Field(..., description="List of generated characters with complete details including appearance, background, and personality traits", min_length=3, max_length=5)
+    theme: str = Field(
+        ...,
+        description="The main theme or setting that was used to generate the characters",
+    )
+    characters: List[Character] = Field(
+        ...,
+        description="List of generated characters with complete details including appearance, background, and personality traits",
+        min_length=3,
+        max_length=5,
+    )
 
 
 async def generate_characters_from_theme(theme: str) -> CharacterGenerationResponse:
@@ -158,6 +145,7 @@ async def generate_characters_from_theme(theme: str) -> CharacterGenerationRespo
     """
 
     response_schema = CharacterGenerationResponse.model_json_schema(mode="validation")
+    print(f"[DEBUG] Character generation schema: {response_schema}")
 
     system_prompt = """You are an expert character designer and creative writer specializing in creating deeply nuanced, emotionally complex characters for interactive storytelling and game development. Your task is to generate diverse, compelling characters that feel authentic and relatable while fitting within specific thematic and mechanical constraints.
 
@@ -177,7 +165,7 @@ CHARACTER CREATION GUIDELINES:
    - Accessories: Select 0-5 accessory types from the provided list that reflect personality and lifestyle
 
 3. EMOTIONAL & PSYCHOLOGICAL DEPTH:
-   - Mental State: Current emotional condition (must be from provided list)
+   - Mental State: Current emotional condition described in a sentence or phrase (e.g., 'feeling anxious about the future', 'deeply depressed and hopeless', 'angry and frustrated with life')
    - Problems: Detailed description of life challenges and struggles (10+ sentences)
    - Background: Rich life history that explains current situation
    - Interaction Warnings: Sensitive topics to avoid during interactions
@@ -225,14 +213,12 @@ AVAILABLE OPTIONS (USE ONLY THESE EXACT VALUES):
 Body Types: {', '.join([body.value for body in BodyType])}
 Shirt Styles: {', '.join([shirt.value for shirt in ShirtStyle])}
 Pants Styles: {', '.join([pants.value for pants in PantsStyle])}
-Outfit Styles: {', '.join([outfit.value for outfit in OutfitStyle])}
 Accessories: {', '.join([accessory.value for accessory in AccessoryType])}
-Mental States: {', '.join([state.value for state in MentalState])}
 
 CHARACTER REQUIREMENTS:
 - Each character must have a unique name, background, and personality
 - Problems should be detailed descriptions of life challenges (10+ sentences)
-- Mental states should reflect current emotional condition
+- Mental states should be descriptive sentences/phrases reflecting current emotional condition (e.g., 'feeling anxious about the future', 'deeply depressed and hopeless')
 - Clothing should match the character's lifestyle and personality
 - Accessories should be a list of 0-5 relevant accessory types from the provided options
 - Interaction warnings should be specific and helpful
@@ -245,7 +231,7 @@ RESPONSE FORMAT:
 Return valid JSON that strictly follows this schema:
 {json.dumps(response_schema, indent=2)}
 
-IMPORTANT: Use ONLY the exact enum values provided above. Do not create variations or new categories."""
+IMPORTANT: Use ONLY the exact enum values provided above for body types, clothing, and accessories. Mental states should be descriptive sentences/phrases."""
 
     start_time = time.time()
 

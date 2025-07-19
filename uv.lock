@@ -426,6 +426,7 @@ dev = [
     { name = "flake8" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
+    { name = "rich" },
 ]
 
 [package.metadata]
@@ -450,6 +451,7 @@ dev = [
     { name = "flake8", specifier = ">=7.3.0" },
     { name = "pytest", specifier = ">=8.4.1" },
     { name = "pytest-asyncio", specifier = ">=1.1.0" },
+    { name = "rich", specifier = ">=13.7.0" },
 ]
 
 [[package]]

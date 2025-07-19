@@ -62,19 +62,31 @@ async def test_character_generation():
                 ), "Character must have an interaction warning"
 
                 # Enum validation
-                assert character.outfit_style in OutfitStyle, f"Invalid outfit style: {character.outfit_style}"
-                assert character.shirt in ShirtStyle, f"Invalid shirt: {character.shirt}"
-                assert character.pants in PantsStyle, f"Invalid pants: {character.pants}"
-                assert character.body_type in BodyType, f"Invalid body type: {character.body_type}"
+                assert (
+                    character.outfit_style in OutfitStyle
+                ), f"Invalid outfit style: {character.outfit_style}"
+                assert (
+                    character.shirt in ShirtStyle
+                ), f"Invalid shirt: {character.shirt}"
+                assert (
+                    character.pants in PantsStyle
+                ), f"Invalid pants: {character.pants}"
+                assert (
+                    character.body_type in BodyType
+                ), f"Invalid body type: {character.body_type}"
                 assert (
                     character.mental_state in MentalState
                 ), f"Invalid mental state: {character.mental_state}"
 
                 # Problems validation
                 assert character.problems, "Character must have problems description"
-                assert len(character.problems) >= 10, "Problems description should be detailed (at least 10 characters)"
+                assert (
+                    len(character.problems) >= 10
+                ), "Problems description should be detailed (at least 10 characters)"
 
-                assert isinstance(character.accessories, list), "Accessories must be a list"
+                assert isinstance(
+                    character.accessories, list
+                ), "Accessories must be a list"
                 for accessory in character.accessories:
                     assert accessory in AccessoryType, f"Invalid accessory: {accessory}"
 
@@ -86,7 +98,9 @@ async def test_character_generation():
                 print(f"  Problems: {character.problems}")
 
                 if character.accessories:
-                    print(f"  Accessories: {', '.join([a.value for a in character.accessories])}")
+                    print(
+                        f"  Accessories: {', '.join([a.value for a in character.accessories])}"
+                    )
                 else:
                     print("  Accessories: None")
 
@@ -127,13 +141,28 @@ async def test_json_schema_format():
     assert "characters" in schema["properties"], "Schema must have characters property"
 
     character_schema = schema["properties"]["characters"]["items"]
-    required_fields = ["name", "background", "outfit_style", "shirt", "pants", "body_type", "accessories", "problems", "mental_state", "interaction_warning"]
-    
+    required_fields = [
+        "name",
+        "background",
+        "outfit_style",
+        "shirt",
+        "pants",
+        "body_type",
+        "accessories",
+        "problems",
+        "mental_state",
+        "interaction_warning",
+    ]
+
     if "properties" in character_schema:
         for field in required_fields:
-            assert field in character_schema["properties"], f"Character schema must have {field} property"
+            assert (
+                field in character_schema["properties"]
+            ), f"Character schema must have {field} property"
     else:
-        assert "$ref" in character_schema, "Character schema must have properties or $ref"
+        assert (
+            "$ref" in character_schema
+        ), "Character schema must have properties or $ref"
 
     print("\n✅ JSON schema validation passed")
 
@@ -179,28 +208,30 @@ async def test_character_validation():
     # Test a simple theme to ensure validation works
     try:
         response = await generate_characters_from_theme("test theme")
-        
+
         for character in response.characters:
             # Test that problems description is detailed
-            assert len(character.problems) >= 10, f"Problems description too short: {len(character.problems)} characters"
-            
+            assert (
+                len(character.problems) >= 10
+            ), f"Problems description too short: {len(character.problems)} characters"
+
             # Test that accessories is a list
-            assert isinstance(character.accessories, list), "Accessories should be a list"
-            
+            assert isinstance(
+                character.accessories, list
+            ), "Accessories should be a list"
+
             # Test that all enum values are valid
             assert character.outfit_style in OutfitStyle
             assert character.shirt in ShirtStyle
             assert character.pants in PantsStyle
             assert character.body_type in BodyType
             assert character.mental_state in MentalState
-            
 
-                
             for accessory in character.accessories:
                 assert accessory in AccessoryType
 
         print("✅ Character validation passed")
-        
+
     except Exception as e:
         print(f"❌ Character validation failed: {str(e)}")
         raise
