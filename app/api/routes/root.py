@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import APIRouter, HTTPException
+import os
+import aiofiles
 
 from app.core.llm import transcribe_audio
 
@@ -18,15 +20,26 @@ async def index():
 
 @router.post("/stt", response_model=str)
 async def stt(
-    audio_file: UploadFile
+    filepath: str
 ):
     """
     Endpoint for speech-to-text functionality.
     """
-    bytes_audio = await audio_file.read()
-
     try:
-        transcription = await transcribe_audio(bytes_audio, audio_file.filename)
+        # Check if file exists
+        if not os.path.exists(filepath):
+            raise HTTPException(status_code=404, detail=f"Audio file not found: {filepath}")
+        
+        # Read audio file
+        async with aiofiles.open(filepath, 'rb') as f:
+            bytes_audio = await f.read()
+        
+        # Extract filename from filepath
+        filename = os.path.basename(filepath)
+        
+        transcription = await transcribe_audio(bytes_audio, filename)
         return transcription
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing audio: {str(e)}")
