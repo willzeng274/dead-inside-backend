@@ -4,7 +4,7 @@ import aiofiles
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from app.core.llm import transcribe_audio
+from app.core.speech_to_text import transcribe_audio
 
 router = APIRouter()
 

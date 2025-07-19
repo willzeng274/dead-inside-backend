@@ -1,9 +1,9 @@
-import io
 import json
+import time
 from typing import List, Optional
 from enum import Enum
 from pydantic import BaseModel, ConfigDict
-from app.core.config import llm_client, settings
+from app.core.config import llm_client
 
 
 class Outfit(str, Enum):
@@ -132,6 +132,8 @@ async def generate_characters_from_theme(theme: str) -> CharacterGenerationRespo
     The response must follow this exact JSON schema:
     {json.dumps(response_schema, indent=2)}"""
 
+    start_time = time.time()
+
     response = await llm_client.chat.completions.create(
         model="gpt-4o",
         messages=[
@@ -149,26 +151,10 @@ async def generate_characters_from_theme(theme: str) -> CharacterGenerationRespo
         },
     )
 
+    end_time = time.time()
+    latency = end_time - start_time
+    print(f"Character generation latency: {latency:.2f} seconds")
+
     result = json.loads(response.choices[0].message.content)
 
     return CharacterGenerationResponse(**result)
-
-
-async def transcribe_audio(bytes_audio: bytes, filename: str) -> str:
-    """
-    Transcribe audio file to text using a speech-to-text model.
-
-    Args:
-        bytes_audio (bytes): The audio file content as bytes
-        filename (str): The name of the audio file
-    """
-
-    file_obj = io.BytesIO(bytes_audio)
-    file_obj.name = filename
-
-    transcription = await llm_client.audio.transcriptions.create(
-        model=settings.SPEECH_TO_TEXT_MODEL,
-        file=file_obj,
-    )
-
-    return transcription.text
