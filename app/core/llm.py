@@ -1,9 +1,11 @@
 import json
+import uuid
 import time
-from typing import List
+from datetime import UTC, datetime
+from typing import List, Dict, Optional
 from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field
-from app.core.config import llm_client
+from app.core.config import llm_client, settings
 
 
 class BodyType(str, Enum):
@@ -133,6 +135,196 @@ class CharacterGenerationResponse(BaseModel):
     )
 
 
+class MessageRole(str, Enum):
+    """Role of the message sender"""
+
+    USER = "user"
+    ASSISTANT = "assistant"
+    SYSTEM = "system"
+
+
+class Message(BaseModel):
+    """Individual message in a conversation"""
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    role: MessageRole
+    content: str
+    timestamp: datetime = Field(default_factory=datetime.now(UTC))
+
+
+class Conversation(BaseModel):
+    """A conversation session with multiple messages"""
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: Optional[str] = None
+    messages: List[Message] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=datetime.now(UTC))
+    character_id: Optional[str] = None
+
+
+class CharacterContext(BaseModel):
+    """Character context for therapy sessions"""
+
+    name: str = Field(..., description="Character's name")
+    mental_state: str = Field(..., description="Character's current mental state")
+    problems: str = Field(..., description="Character's problems and struggles")
+    background: str = Field(..., description="Character's background and history")
+    interaction_warning: str = Field(
+        default="none", description="Any warnings about interacting with this character"
+    )
+
+
+class CharacterResponse(BaseModel):
+    """Character's response to therapy with emotional state changes"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    emotional_change: int = Field(
+        ..., ge=-10, le=10, description="Change in emotional state (-10 to +10)"
+    )
+    satisfied: bool = Field(
+        ..., description="Whether the character is satisfied with the therapy"
+    )
+    enraged: bool = Field(
+        ..., description="Whether the character is completely enraged"
+    )
+    comment: str = Field(
+        ..., description="Character's response to the therapist (1-2 sentences)"
+    )
+
+
+# In-memory storage for conversations
+conversations: Dict[str, Conversation] = {}
+
+
+def get_conversation(conversation_id: str) -> Optional[Conversation]:
+    """Get a conversation by ID"""
+    return conversations.get(conversation_id)
+
+
+def save_conversation(conversation: Conversation) -> None:
+    """Save a conversation to memory"""
+    conversations[conversation.id] = conversation
+
+
+def create_new_conversation(character_id: Optional[str] = None) -> Conversation:
+    """Create a new conversation"""
+    conversation = Conversation(character_id=character_id)
+    save_conversation(conversation)
+    return conversation
+
+
+async def generate_character_response(
+    messages: List[Message], character_context: CharacterContext
+) -> CharacterResponse:
+    """Generate a character's response to therapy using Pydantic schema"""
+
+    schema = CharacterResponse.model_json_schema(mode="validation")
+    print(f"[DEBUG] Generated schema: {schema}")
+
+    system_message = {
+        "role": "system",
+        "content": f"""You are {character_context.name} who is receiving therapy. 
+
+CHARACTER CONTEXT:
+- Mental State: {character_context.mental_state}
+- Problems: {character_context.problems}
+- Background: {character_context.background}
+- Interaction Warning: {character_context.interaction_warning}
+
+FAST-PACED THERAPY SESSION RULES:
+- You are the CLIENT, not the therapist
+- Sessions should be intense and impactful - aim for 1 minute total
+- Respond briefly but emotionally to the therapist's approach
+- Show immediate emotional reactions to each intervention
+- Be honest about your feelings and problems based on your character context
+
+EMOTIONAL STATE GUIDELINES:
+- If the therapist is empathetic, understanding, and helpful: +3 to +8 emotional change
+- If the therapist is dismissive, judgmental, or unhelpful: -3 to -8 emotional change
+- If the therapist gives excellent advice that resonates: +5 to +10 emotional change
+- If the therapist is completely inappropriate or harmful: -5 to -10 emotional change
+- If you feel truly heard and helped: +7 to +10 emotional change
+- If you feel completely misunderstood or attacked: -7 to -10 emotional change
+
+SATISFACTION REQUIREMENTS:
+- Only become satisfied if emotional health reaches 85+ AND therapist has been consistently helpful
+- Become enraged if emotional health drops below 15 OR therapist is completely inappropriate
+
+RESPONSE FORMAT:
+Return valid JSON that strictly follows the provided schema with emotional_change, satisfied, enraged, and comment fields.""",
+    }
+
+    openai_messages = [system_message]
+    for msg in messages:
+        openai_messages.append({"role": msg.role.value, "content": msg.content})
+
+    try:
+        response = await llm_client.chat.completions.create(
+            model=settings.LLM_MODEL_CHAT,
+            messages=openai_messages,
+            temperature=0.8,
+            max_tokens=300,
+            response_format={
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "character_response",
+                    "schema": schema,
+                    "strict": True,
+                },
+            },
+        )
+
+        response_text = response.choices[0].message.content.strip()
+        print(f"\n[DEBUG] Raw LLM response:\n{response_text}")
+
+        data = json.loads(response_text)
+        character_response = CharacterResponse(**data)
+        return character_response
+
+    except Exception as e:
+        print(f"[DEBUG] Error: {e}")
+        raise Exception(f"LLM error: {str(e)}")
+
+
+async def start_character_session(
+    character_id: str, character_context: CharacterContext
+) -> tuple[str, str]:
+    """Start a new therapy session where the character speaks first"""
+
+    conversation = create_new_conversation(character_id)
+
+    initial_prompt = f"""You are {character_context.name} starting a therapy session.
+
+CHARACTER CONTEXT:
+- Mental State: {character_context.mental_state}
+- Problems: {character_context.problems}
+- Background: {character_context.background}
+
+TASK: Write a brief opening statement (1-2 sentences) explaining why you're seeking therapy. Be honest about your current struggles and mental state. This is your first message to the therapist.
+
+RESPONSE FORMAT: Just write the opening statement, no JSON needed."""
+
+    try:
+        response = await llm_client.chat.completions.create(
+            model=settings.LLM_MODEL_CHAT,
+            messages=[{"role": "system", "content": initial_prompt}],
+            temperature=0.8,
+            max_tokens=150,
+        )
+        initial_message = response.choices[0].message.content.strip()
+    except Exception as e:
+        raise Exception(f"Failed to generate initial message: {e}")
+
+    character_message = Message(role=MessageRole.ASSISTANT, content=initial_message)
+    conversation.messages.append(character_message)
+
+    save_conversation(conversation)
+
+    return conversation.id, initial_message
+
+
 async def generate_characters_from_theme(theme: str) -> CharacterGenerationResponse:
     """
     Generate a list of characters based on a given theme.
@@ -236,7 +428,7 @@ IMPORTANT: Use ONLY the exact enum values provided above for body types, clothin
     start_time = time.time()
 
     response = await llm_client.chat.completions.create(
-        model="gpt-4o",
+        model=settings.LLM_MODEL_CHARACTER_GENERATION,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},

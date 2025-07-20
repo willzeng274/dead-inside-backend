@@ -33,8 +33,8 @@ class Settings(BaseSettings):
             self.FRONTEND_HOST.rstrip("/")
         ]
 
-    # SPEECH_TO_TEXT_MODEL: str = "whisper-1"
-    # SPEECH_TO_TEXT_MODEL: str = "gpt-4o-mini-transcribe"
+    LLM_MODEL_CHAT: str = "gpt-4o"
+    LLM_MODEL_CHARACTER_GENERATION: str = "gpt-4o"
 
 
 llm_client: AsyncOpenAI = AsyncOpenAI(
