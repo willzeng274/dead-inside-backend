@@ -4,8 +4,6 @@ import pytest
 from app.core.llm import (
     generate_characters_from_theme,
     CharacterGenerationResponse,
-    OutfitStyle,
-    MentalState,
     ShirtStyle,
     PantsStyle,
     BodyType,
@@ -52,7 +50,6 @@ async def test_character_generation():
 
                 assert character.name, "Character must have a name"
                 assert character.background, "Character must have a background"
-                assert character.outfit_style, "Character must have an outfit style"
                 assert character.shirt, "Character must have a shirt"
                 assert character.pants, "Character must have pants"
                 assert character.body_type, "Character must have a body type"
@@ -63,9 +60,6 @@ async def test_character_generation():
 
                 # Enum validation
                 assert (
-                    character.outfit_style in OutfitStyle
-                ), f"Invalid outfit style: {character.outfit_style}"
-                assert (
                     character.shirt in ShirtStyle
                 ), f"Invalid shirt: {character.shirt}"
                 assert (
@@ -74,9 +68,6 @@ async def test_character_generation():
                 assert (
                     character.body_type in BodyType
                 ), f"Invalid body type: {character.body_type}"
-                assert (
-                    character.mental_state in MentalState
-                ), f"Invalid mental state: {character.mental_state}"
 
                 # Problems validation
                 assert character.problems, "Character must have problems description"
@@ -90,12 +81,11 @@ async def test_character_generation():
                 for accessory in character.accessories:
                     assert accessory in AccessoryType, f"Invalid accessory: {accessory}"
 
-                print(f"  Outfit Style: {character.outfit_style.value}")
                 print(f"  Shirt: {character.shirt.value}")
                 print(f"  Pants: {character.pants.value}")
                 print(f"  Body Type: {character.body_type.value}")
-                print(f"  Mental State: {character.mental_state.value}")
-                print(f"  Problems: {character.problems}")
+                print(f"  Mental State: {character.mental_state}")
+                print(f"  Problems: {character.problems[:100]}...")
 
                 if character.accessories:
                     print(
@@ -144,7 +134,6 @@ async def test_json_schema_format():
     required_fields = [
         "name",
         "background",
-        "outfit_style",
         "shirt",
         "pants",
         "body_type",
@@ -176,22 +165,16 @@ async def test_enum_values():
     print("=" * 60)
 
     # Test enum counts
-    print(f"OutfitStyle options: {len(OutfitStyle)}")
     print(f"ShirtStyle options: {len(ShirtStyle)}")
     print(f"PantsStyle options: {len(PantsStyle)}")
     print(f"BodyType options: {len(BodyType)}")
     print(f"AccessoryType options: {len(AccessoryType)}")
 
-    print(f"MentalState options: {len(MentalState)}")
-
     # Verify minimum counts
-    assert len(OutfitStyle) >= 10, "Should have at least 10 outfit styles"
     assert len(ShirtStyle) >= 10, "Should have at least 10 shirt styles"
     assert len(PantsStyle) >= 10, "Should have at least 10 pants styles"
     assert len(BodyType) >= 5, "Should have at least 5 body types"
     assert len(AccessoryType) >= 10, "Should have at least 10 accessory types"
-
-    assert len(MentalState) >= 10, "Should have at least 10 mental states"
 
     print("\n✅ Enum validation passed")
 
@@ -221,11 +204,9 @@ async def test_character_validation():
             ), "Accessories should be a list"
 
             # Test that all enum values are valid
-            assert character.outfit_style in OutfitStyle
             assert character.shirt in ShirtStyle
             assert character.pants in PantsStyle
             assert character.body_type in BodyType
-            assert character.mental_state in MentalState
 
             for accessory in character.accessories:
                 assert accessory in AccessoryType

@@ -18,7 +18,7 @@ from app.core.llm import (
     get_all_characters,
 )
 
-router = APIRouter(prefix="/chat")
+router = APIRouter(prefix="/legacy/chat")
 
 
 class ChatRequest(BaseModel):
@@ -58,7 +58,6 @@ class ChatResponse(BaseModel):
 class CharacterGenerationRequest(BaseModel):
     """Request model for character generation"""
     theme: str = Field(..., description="Theme for character generation")
-    num_characters: int = Field(..., description="Number of characters to generate")
 
 
 async def get_character_context_from_redis(character_id: str) -> CharacterContext:
@@ -271,7 +270,7 @@ async def generate_characters(request: CharacterGenerationRequest):
     """Generate characters with auto-generated UUIDs"""
     try:
         from app.core.llm import generate_characters_from_theme
-        response = await generate_characters_from_theme(request.theme, request.num_characters)
+        response = await generate_characters_from_theme(request.theme)
         return {
             "theme": response.theme,
             "characters": [char.model_dump() for char in response.characters],

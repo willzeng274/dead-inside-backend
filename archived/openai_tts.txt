@@ -1,0 +1,20 @@
+gpt-4o-mini-tts:
+  Success Rate: 18/18 (100.0%)
+  Avg Latency: 0.92s
+  Min Latency: 0.62s
+  Max Latency: 1.34s
+  Avg File Size: 50667 bytes
+
+tts-1:
+  Success Rate: 18/18 (100.0%)
+  Avg Latency: 1.48s
+  Min Latency: 0.84s
+  Max Latency: 2.20s
+  Avg File Size: 59520 bytes
+
+tts-1-hd:
+  Success Rate: 18/18 (100.0%)
+  Avg Latency: 2.31s
+  Min Latency: 1.59s
+  Max Latency: 3.63s
+  Avg File Size: 60160 bytes

@@ -8,6 +8,7 @@ from pydantic import (
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from openai import AsyncOpenAI
+import redis.asyncio as redis
 
 from dotenv import load_dotenv
 
@@ -26,6 +27,12 @@ class Settings(BaseSettings):
 
     BACKEND_CORS_ORIGINS: list[AnyUrl] | str = []
 
+    REDIS_HOST: str = "redis-13867.c81.us-east-1-2.ec2.redns.redis-cloud.com"
+    REDIS_PORT: int = 13867
+    REDIS_USERNAME: str = "default"
+    REDIS_PASSWORD: str = os.getenv("REDIS_PASSWORD", "")
+    REDIS_DECODE_RESPONSES: bool = True
+
     @computed_field
     @property
     def all_cors_origins(self) -> list[str]:
@@ -42,3 +49,11 @@ llm_client: AsyncOpenAI = AsyncOpenAI(
 )
 
 settings = Settings()
+
+redis_client = redis.Redis(
+    host=settings.REDIS_HOST,
+    port=settings.REDIS_PORT,
+    username=settings.REDIS_USERNAME,
+    password=settings.REDIS_PASSWORD,
+    decode_responses=settings.REDIS_DECODE_RESPONSES,
+)
