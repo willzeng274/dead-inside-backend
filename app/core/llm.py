@@ -23,84 +23,41 @@ class TTSVoice(str, Enum):
 
 class BodyType(str, Enum):
     """Character's physical body type and build"""
-
     SLIM = "slim"  # Thin, lean build
-    ATHLETIC = "athletic"  # Fit, toned, sports-oriented build
-    AVERAGE = "average"  # Medium, typical build
-    CURVY = "curvy"  # Full-figured with defined curves
-    PLUS_SIZE = "plus_size"  # Larger, fuller build
-    MUSCULAR = "muscular"  # Strong, well-built with visible muscle
-    PETITE = "petite"  # Small, delicate build
-    TALL = "tall"  # Above average height
-    SHORT = "short"  # Below average height
+    FAT = "fat"  # Larger, fuller build
+    FIT = "fit"  # Athletic, toned build
 
 
-class ShirtStyle(str, Enum):
-    T_SHIRT = "t_shirt"
-    BUTTON_DOWN = "button_down"
-    HOODIE = "hoodie"
-    SWEATER = "sweater"
-    TANK_TOP = "tank_top"
-    POLO = "polo"
-    BLOUSE = "blouse"
-    DRESS_SHIRT = "dress_shirt"
-    CARDIGAN = "cardigan"
-    FLANNEL = "flannel"
-    TURTLENECK = "turtleneck"
-    CROP_TOP = "crop_top"
-    TUNIC = "tunic"
-    HENLEY = "henley"
-    VEST = "vest"
+class HeadMaterial(str, Enum):
+    """Head material options for zombie avatars"""
+    BLACK_NEUTRAL = "BlackNeutral"
+    BROWN_NEUTRAL = "BrownNeutral"
+    GRAY_ANGRY = "GrayAngry"
 
 
-class PantsStyle(str, Enum):
-    JEANS = "jeans"
-    CHINOS = "chinos"
-    SLACKS = "slacks"
-    SHORTS = "shorts"
-    LEGGINGS = "leggings"
-    SKIRT = "skirt"
-    CARGO_PANTS = "cargo_pants"
-    SWEATPANTS = "sweatpants"
-    DRESS_PANTS = "dress_pants"
-    JOGGERS = "joggers"
-    PALAZZO_PANTS = "palazzo_pants"
-    CULOTTES = "culottes"
-    OVERALLS = "overalls"
-    CAPRIS = "capris"
-    WIDE_LEG = "wide_leg"
+class BodyMaterial(str, Enum):
+    """Body material options for zombie avatars"""
+    BROWN = "Brown"
+    SKULL = "Skull"
+    WHITE = "White"
+    RED_HOODIE = "RedHoodie"
+    VEST = "Vest"
 
 
-class AccessoryType(str, Enum):
-    """Types of accessories and items characters can wear or carry"""
+class LegMaterial(str, Enum):
+    """Leg material options for zombie avatars"""
+    BLACK = "Black"
+    CARGO = "Cargo"
+    JEANS = "Jeans"
+    SHORTS = "Shorts"
 
-    # Headwear
-    HAT = "hat"  # Generic hat or head covering
-    CAP = "cap"  # Baseball cap or similar casual hat
-    BEANIE = "beanie"  # Winter hat, often knitted
 
-    # Eyewear
-    GLASSES = "glasses"  # Prescription or reading glasses
-    SUNGLASSES = "sunglasses"  # Sunglasses for sun protection
-
-    # Jewelry
-    NECKLACE = "necklace"  # Neck jewelry or chain
-    EARRINGS = "earrings"  # Ear jewelry
-    BRACELET = "bracelet"  # Wrist jewelry
-    RING = "ring"  # Finger jewelry
-    WATCH = "watch"  # Timepiece or wristwatch
-
-    # Bags
-    BAG = "bag"  # Generic bag or container
-    BACKPACK = "backpack"  # Backpack for carrying items
-    PURSE = "purse"  # Handbag or wallet
-
-    # Other accessories
-    SCARF = "scarf"  # Neck scarf for warmth or style
-    BELT = "belt"  # Waist belt for holding pants
-    GLOVES = "gloves"  # Hand coverings
-    TIE = "tie"  # Neck tie for formal wear
-    BANDANA = "bandana"  # Head or neck bandana
+class FeetMaterial(str, Enum):
+    """Feet material options for zombie avatars"""
+    BLACK = "Black"
+    BLUE = "Blue"
+    GRAY = "Gray"
+    NAVY = "Navy"
 
 
 class Gender(str, Enum):
@@ -117,14 +74,11 @@ class Character(BaseModel):
         ...,
         description="Detailed life history and background story explaining the character's past, current situation, and what led them to their present circumstances (3-5 sentences)",
     )
-    # outfit_style: OutfitStyle = Field(...)
-    shirt: ShirtStyle = Field(...)
-    pants: PantsStyle = Field(...)
     body_type: BodyType = Field(...)
-    accessories: List[AccessoryType] = Field(
-        ...,
-        description="List of accessories and items the character wears or carries (0-5 items)",
-    )
+    head_material: HeadMaterial = Field(...)
+    body_material: BodyMaterial = Field(...)
+    leg_material: LegMaterial = Field(...)
+    feet_material: FeetMaterial = Field(...)
     problem: str = Field(
         ...,
         description="Detailed description of the character's current life challenges, struggles, and difficulties they are facing (2-4 sentences)",
@@ -560,9 +514,10 @@ Remember: These characters are designed for meaningful player interaction. Each 
 AVAILABLE OPTIONS (USE ONLY THESE EXACT VALUES):
 
 Body Types: {', '.join([body.value for body in BodyType])}
-Shirt Styles: {', '.join([shirt.value for shirt in ShirtStyle])}
-Pants Styles: {', '.join([pants.value for pants in PantsStyle])}
-Accessories: {', '.join([accessory.value for accessory in AccessoryType])}
+Head Materials: {', '.join([head.value for head in HeadMaterial])}
+Body Materials: {', '.join([body.value for body in BodyMaterial])}
+Leg Materials: {', '.join([leg.value for leg in LegMaterial])}
+Feet Materials: {', '.join([feet.value for feet in FeetMaterial])}
 TTS Voices: {', '.join([voice.value for voice in TTSVoice])}
 Genders: {', '.join([gender.value for gender in Gender])}
 
@@ -571,8 +526,7 @@ CHARACTER REQUIREMENTS:
 - Problem should be detailed descriptions of life challenges (2-4 sentences)
 - Problem Description should be exactly 3 words summarizing the main issue (e.g., 'anxiety about future', 'depression and isolation')
 - Mental states should be descriptive sentences/phrases reflecting current emotional condition (e.g., 'feeling anxious about the future', 'deeply depressed and hopeless')
-- Clothing should match the character's lifestyle and personality
-- Accessories should be a list of 0-5 relevant accessory types from the provided options
+- Material choices should reflect the character's personality and emotional state
 - Interaction warnings should be specific and helpful
 - Background stories should be detailed (3-5 sentences)
 - Voice Instructions should be detailed emotional and vocal instructions for TTS (e.g., 'speak in a trembling, anxious voice with frequent pauses and sighs', 'deep, gravelly voice with anger simmering beneath the surface')
