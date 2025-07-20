@@ -211,3 +211,9 @@ Error response format:
   "detail": "Error description"
 }
 ```
+
+---
+
+# Game Workflow Sequence Diagram
+
+![Game Workflow Sequence Diagram](diagram.png)
