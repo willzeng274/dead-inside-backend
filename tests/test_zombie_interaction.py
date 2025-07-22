@@ -204,6 +204,10 @@ async def test_zombie_interaction_e2e():
                 f"Mental State: {character['mental_state']}\n"
                 f"Problem: {character['problem'][:100]}...\n"
                 f"Problem Description: {character['problem_description']}\n"
+                f"Head Material: {character.get('head_material', 'N/A')}\n"
+                f"Body Material: {character.get('body_material', 'N/A')}\n"
+                f"Leg Material: {character.get('leg_material', 'N/A')}\n"
+                f"Feet Material: {character.get('feet_material', 'N/A')}\n"
                 f"Voice Instructions: {character.get('voice_instructions', 'N/A')[:100]}...\n"
                 f"Voice Selection: {character.get('voice_selection', 'N/A')}\n"
                 f"Interaction Warning: {character['interaction_warning']}",
