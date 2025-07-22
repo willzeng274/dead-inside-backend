@@ -20,7 +20,6 @@ class RedisClient:
         """Save a conversation to Redis"""
         try:
             key = self._get_conversation_key(conversation_id)
-            # Convert datetime objects to ISO format for JSON serialization
             serializable_data = self._prepare_for_serialization(conversation_data)
             serialized = json.dumps(serializable_data)
             return await self.redis_client.set(key, serialized)

@@ -1,11 +1,10 @@
 import os
-import tempfile
 from pathlib import Path
-from typing import Optional
 from enum import Enum
 
 from pydantic import BaseModel, Field
 from app.core.config import llm_client
+from pydub import AudioSegment
 
 
 class TTSVoice(str, Enum):
@@ -62,9 +61,16 @@ async def generate_tts(request: TTSRequest):
             input=full_text
         )
         
-        # Write directly to the specified path
         with open(request.stored_file_path, "wb") as f:
             f.write(response.content)
+        
+        ext = os.path.splitext(request.stored_file_path)[1].lower()
+        if ext != ".mp3":
+            temp_mp3_path = request.stored_file_path + ".temp.mp3"
+            os.rename(request.stored_file_path, temp_mp3_path)
+            audio = AudioSegment.from_file(temp_mp3_path, format="mp3")
+            audio.export(request.stored_file_path, format=ext[1:])
+            os.remove(temp_mp3_path)
             
     except Exception as e:
         raise Exception(f"Failed to generate TTS: {str(e)}")
