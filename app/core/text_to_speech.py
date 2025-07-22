@@ -5,6 +5,7 @@ from enum import Enum
 from pydantic import BaseModel, Field
 from app.core.config import llm_client
 from pydub import AudioSegment
+from app.core.llm import get_character
 
 
 class TTSVoice(str, Enum):
@@ -24,7 +25,6 @@ class TTSRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=4000, description="Text to convert to speech")
     stored_file_path: str = Field(..., description="Path to the stored audio file")
     character_id: str = Field(..., description="Character UUID to get voice settings from")
-    voice: str = Field(default="alloy", description="Voice to use for speech synthesis")
 
 
 async def generate_tts(request: TTSRequest):
@@ -55,10 +55,18 @@ async def generate_tts(request: TTSRequest):
         if output_dir:
             Path(output_dir).mkdir(parents=True, exist_ok=True)
         
+        # Fetch character from Redis to get voice and instructions
+        character = await get_character(request.character_id)
+        if not character:
+            raise Exception(f"Character {request.character_id} not found in Redis")
+        voice = character.get("voice_selection", "alloy")
+        voice_instructions = character.get("voice_instructions", "")
+        
         response = await llm_client.audio.speech.create(
             model="gpt-4o-mini-tts",
-            voice=request.voice,
-            input=full_text
+            voice=voice,
+            input=full_text,
+            instructions=voice_instructions
         )
         
         with open(request.stored_file_path, "wb") as f:
@@ -76,7 +84,7 @@ async def generate_tts(request: TTSRequest):
         raise Exception(f"Failed to generate TTS: {str(e)}")
 
 
-async def text_to_speech(text: str, stored_file_path: str, character_id: str, voice: str = "alloy") -> str:
+async def text_to_speech(text: str, stored_file_path: str, character_id: str) -> str:
     """
     Simple text-to-speech function that writes to a specified path.
     
@@ -89,6 +97,6 @@ async def text_to_speech(text: str, stored_file_path: str, character_id: str, vo
     Returns:
         Path to the generated audio file
     """
-    request = TTSRequest(text=text, stored_file_path=stored_file_path, character_id=character_id, voice=voice)
+    request = TTSRequest(text=text, stored_file_path=stored_file_path, character_id=character_id)
     await generate_tts(request)
     return stored_file_path 
